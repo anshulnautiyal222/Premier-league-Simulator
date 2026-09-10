@@ -14,7 +14,8 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  Flame
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -147,6 +148,13 @@ export default function MarketClient({ players, club, ownedPlayerIds }: MarketCl
               </div>
             </div>
           </div>
+          <Link
+            href="/rumors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold text-xs transition-all shadow-sm"
+          >
+            <Flame className="w-3.5 h-3.5" />
+            <span>Rumor Terminal</span>
+          </Link>
           <Link
             href="/dashboard"
             className="px-4 py-2.5 rounded-xl bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-white transition-colors"

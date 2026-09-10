@@ -92,6 +92,14 @@ export default async function DashboardPage() {
 
           <div className="flex items-center gap-4">
             <Link
+              href="/rumors"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold text-xs transition-all shadow-sm"
+            >
+              <Flame className="w-3.5 h-3.5" />
+              <span>Rumor Terminal</span>
+            </Link>
+
+            <Link
               href="/market"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00FF87] text-black font-bold text-xs hover:bg-[#00e67a] transition-all shadow-sm"
             >
