@@ -1,21 +1,23 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
+import RosterTable from './RosterTable';
 import { 
   Coins, 
   TrendingUp, 
-  Users, 
   Building2, 
   LogOut, 
-  ExternalLink,
   Shield,
   Crown,
   Flame,
   Anchor,
   Target,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
+
+export const dynamic = 'force-dynamic';
 
 const BADGE_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   preset_lion: Crown,
@@ -44,11 +46,43 @@ export default async function DashboardPage() {
     redirect('/found-club');
   }
 
-  // Count active roster players
-  const { count: rosterCount } = await supabase
+  // Fetch full active roster with player details
+  const { data: rosterData } = await supabase
     .from('club_roster')
-    .select('*', { count: 'exact', head: true })
-    .eq('club_id', club.id);
+    .select(`
+      id,
+      player_id,
+      acquisition_price,
+      acquired_at,
+      in_starting_xi,
+      players (
+        id,
+        name,
+        real_team,
+        position,
+        current_market_value,
+        form_score,
+        injury_status
+      )
+    `)
+    .eq('club_id', club.id)
+    .order('acquired_at', { ascending: false });
+
+  const roster = (rosterData || []).map((entry: any) => {
+    const p = entry.players;
+    return {
+      id: entry.id,
+      playerId: entry.player_id,
+      name: p?.name || 'Unknown Player',
+      realTeam: p?.real_team || 'Premier League',
+      position: p?.position || 'MID',
+      acquisitionPrice: Number(entry.acquisition_price) || 0,
+      currentMarketValue: Number(p?.current_market_value) || Number(entry.acquisition_price) || 0,
+      formScore: Number(p?.form_score) || 6.5,
+      injuryStatus: p?.injury_status || 'fit',
+      inStartingXi: Boolean(entry.in_starting_xi),
+    };
+  });
 
   const colors = (club.colors as { primary?: string; secondary?: string }) || {
     primary: '#00FF87',
@@ -57,9 +91,9 @@ export default async function DashboardPage() {
 
   const BadgeIcon = BADGE_MAP[club.badge_url] || Shield;
 
+  const calculatedSquadValue = roster.reduce((acc, item) => acc + item.currentMarketValue, 0);
   const purseBalance = Number(club.virtual_purse_balance) || 100000000;
-  const squadValue = Number(club.total_squad_value) || 0;
-  const netWorth = purseBalance + squadValue;
+  const netWorth = purseBalance + calculatedSquadValue;
 
   return (
     <div className="min-h-screen bg-[#0A0E17] text-slate-100">
@@ -86,9 +120,17 @@ export default async function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs bg-[#161F30] px-3 py-1.5 rounded-full border border-[#22304A]">
+            <Link
+              href="/market"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00FF87] text-black font-bold text-xs hover:bg-[#00e67a] transition-all shadow-sm"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>Transfer Desk</span>
+            </Link>
+
+            <div className="flex items-center gap-2 text-xs bg-[#161F30] px-3 py-1.5 rounded-full border border-[#22304A]">
               <Coins className="w-3.5 h-3.5 text-[#FFD700]" />
-              <span className="text-slate-400">Liquid Purse:</span>
+              <span className="text-slate-400">Purse:</span>
               <strong className="text-[#00FF87] font-mono">
                 £{purseBalance.toLocaleString('en-GB')}
               </strong>
@@ -100,7 +142,7 @@ export default async function DashboardPage() {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161F30] hover:bg-red-500/10 hover:text-red-400 border border-[#22304A] text-xs text-slate-300 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Exit</span>
+                <span className="hidden sm:inline">Sign Out</span>
               </button>
             </form>
           </div>
@@ -109,40 +151,37 @@ export default async function DashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Welcome & Financial Banner */}
+        {/* Welcome Banner */}
         <div 
-          className="p-8 rounded-2xl border relative overflow-hidden"
-          style={{
-            backgroundColor: '#111827',
-            borderColor: '#22304A'
-          }}
+          className="p-6 sm:p-8 rounded-2xl border relative overflow-hidden bg-[#111827] border-[#22304A]"
         >
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#00FF87]/10 border border-[#00FF87]/30 text-[#00FF87] mb-3">
                 <span className="w-2 h-2 rounded-full bg-[#00FF87] animate-pulse" />
-                Sporting Director Boardroom
+                Boardroom & Sporting Directorship
               </div>
               <h1 className="text-3xl font-black text-white tracking-tight">
                 {club.club_name}
               </h1>
-              <p className="text-sm text-slate-400 mt-1">
-                Home Ground: <strong className="text-slate-200">{club.home_ground_name || 'Home Ground'}</strong> • Manager Account: <strong className="text-slate-200">{user.email}</strong>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Home Ground: <strong className="text-slate-200">{club.home_ground_name || 'Home Ground'}</strong> • Manager: <strong className="text-slate-200">{user.email}</strong>
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               <Link
-                href="/found-club"
-                className="px-4 py-2 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-slate-200 transition-colors"
+                href="/market"
+                className="px-5 py-3 rounded-xl bg-[#00FF87] text-black font-black text-xs flex items-center gap-2 hover:bg-[#00e67a] active:scale-95 transition-all shadow-md shadow-[#00FF87]/10"
               >
-                Edit Club Identity
+                <span>Browse Transfer Market</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Financial Metrics Cards */}
+        {/* Financial Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div className="p-5 rounded-xl bg-[#161F30] border border-[#22304A]">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
@@ -153,7 +192,7 @@ export default async function DashboardPage() {
               £{purseBalance.toLocaleString('en-GB')}
             </div>
             <div className="text-[11px] text-slate-400 mt-1">
-              Available for open-market transfers
+              Available cash for player signings
             </div>
           </div>
 
@@ -163,10 +202,10 @@ export default async function DashboardPage() {
               <TrendingUp className="w-4 h-4 text-[#38BDF8]" />
             </div>
             <div className="text-2xl font-black font-mono text-white">
-              £{squadValue.toLocaleString('en-GB')}
+              £{calculatedSquadValue.toLocaleString('en-GB')}
             </div>
             <div className="text-[11px] text-slate-400 mt-1">
-              {rosterCount || 0} active player contracts held
+              {roster.length} active player cards held
             </div>
           </div>
 
@@ -179,76 +218,50 @@ export default async function DashboardPage() {
               £{netWorth.toLocaleString('en-GB')}
             </div>
             <div className="text-[11px] text-slate-400 mt-1">
-              Purse balance + squad market value
+              Purse + Squad Market Value
             </div>
           </div>
         </div>
 
-        {/* Facilities & Next Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Facility Status */}
-          <div className="p-6 rounded-2xl bg-[#111827] border border-[#22304A]">
-            <h2 className="text-base font-bold text-white flex items-center gap-2 mb-4">
-              <Building2 className="w-4 h-4 text-[#00FF87]" />
-              Club Infrastructure & Facility Tiers
-            </h2>
+        {/* Active Squad Roster Section */}
+        <RosterTable roster={roster} purseBalance={purseBalance} />
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[#0A0E17] border border-[#22304A]">
-                <div>
-                  <div className="font-semibold text-xs text-white">Youth Academy</div>
-                  <div className="text-[11px] text-slate-400">Yields discounted rookie wonderkids</div>
-                </div>
-                <span className="font-mono text-xs px-2.5 py-1 rounded bg-[#161F30] text-[#00FF87] border border-[#22304A]">
-                  Tier {club.academy_level || 1} / 5
+        {/* Facilities Status */}
+        <div className="p-6 rounded-2xl bg-[#111827] border border-[#22304A]">
+          <h2 className="text-base font-bold text-white flex items-center gap-2 mb-4">
+            <Building2 className="w-4 h-4 text-[#00FF87]" />
+            Club Facilities & Passive Yields
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold text-xs text-white">Youth Academy</span>
+                <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161F30] text-[#00FF87] border border-[#22304A]">
+                  Tier {club.academy_level || 1}
                 </span>
               </div>
-
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[#0A0E17] border border-[#22304A]">
-                <div>
-                  <div className="font-semibold text-xs text-white">Scouting Department</div>
-                  <div className="text-[11px] text-slate-400">Unlocks early breaking rumor intel</div>
-                </div>
-                <span className="font-mono text-xs px-2.5 py-1 rounded bg-[#161F30] text-[#38BDF8] border border-[#22304A]">
-                  Tier {club.scouting_level || 1} / 5
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[#0A0E17] border border-[#22304A]">
-                <div>
-                  <div className="font-semibold text-xs text-white">Commercial Stadium</div>
-                  <div className="text-[11px] text-slate-400">Generates weekly purse dividends</div>
-                </div>
-                <span className="font-mono text-xs px-2.5 py-1 rounded bg-[#161F30] text-[#FFD700] border border-[#22304A]">
-                  Tier {club.stadium_level || 1} / 5
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Roster & Market Status */}
-          <div className="p-6 rounded-2xl bg-[#111827] border border-[#22304A] flex flex-col justify-between">
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-[#38BDF8]" />
-                Squad Building Status
-              </h2>
-              <p className="text-xs text-slate-400 mb-6">
-                Your club has <strong className="text-white">{rosterCount || 0}</strong> players registered. Premier League regulations require between 11 and 25 players to field an active matchday lineup.
-              </p>
-
-              <div className="p-4 rounded-xl bg-[#161F30] border border-[#22304A] text-xs text-slate-300 flex items-center justify-between">
-                <span>Roster Requirement:</span>
-                <span className="font-mono font-bold text-[#FFD700]">11 - 25 Players</span>
-              </div>
+              <p className="text-[11px] text-slate-400">Rookie wonderkid token yields</p>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[#22304A]">
-              <div className="text-xs text-slate-400 mb-2">Ready to make your first signing?</div>
-              <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#00FF87] hover:underline cursor-pointer">
-                <span>Proceed to Transfer Market (Coming in next milestone)</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+            <div className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold text-xs text-white">Scouting Radar</span>
+                <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161F30] text-[#38BDF8] border border-[#22304A]">
+                  Tier {club.scouting_level || 1}
+                </span>
               </div>
+              <p className="text-[11px] text-slate-400">15m advance rumor intelligence</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold text-xs text-white">Commercial Stadium</span>
+                <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161F30] text-[#FFD700] border border-[#22304A]">
+                  Tier {club.stadium_level || 1}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">Generates weekly purse dividends</p>
             </div>
           </div>
         </div>
