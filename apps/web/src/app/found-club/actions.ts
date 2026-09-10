@@ -1,24 +1,17 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser, getClubForUser, saveClubSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 export async function foundClub(formData: FormData) {
-  const supabase = createClient();
-
   // Verify authenticated user
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect('/auth/login');
   }
 
   // Check if user already founded a club
-  const { data: existingClub } = await supabase
-    .from('clubs')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
+  const existingClub = await getClubForUser(user.id);
   if (existingClub) {
     redirect('/dashboard');
   }
@@ -39,9 +32,8 @@ export async function foundClub(formData: FormData) {
   }
 
   // Insert club with £100M starting demo purse (£100,000,000)
-  const { error: insertError } = await supabase
-    .from('clubs')
-    .insert({
+  try {
+    await saveClubSession({
       user_id: user.id,
       club_name: clubName,
       badge_url: badgeUrl,
@@ -50,15 +42,14 @@ export async function foundClub(formData: FormData) {
         secondary: secondaryColor,
       },
       home_ground_name: homeGroundName,
-      virtual_purse_balance: 100000000.00, // £100M virtual funds
+      virtual_purse_balance: 100000000.00, // £100M starting virtual purse
       total_squad_value: 0.00,
       academy_level: 1,
       scouting_level: 1,
       stadium_level: 1,
     });
-
-  if (insertError) {
-    return { error: `Failed to found club: ${insertError.message}` };
+  } catch (err: any) {
+    return { error: `Failed to found club: ${err.message}` };
   }
 
   redirect('/dashboard');

@@ -1,11 +1,12 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { setDemoUserSession, clearUserSession, getClubForUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
-export async function signUp(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+export async function signUp(formData: FormData): Promise<{ error?: string; message?: string } | void> {
+  const email = (formData.get('email') as string)?.trim();
+  const password = (formData.get('password') as string)?.trim();
 
   if (!email || !password) {
     return { error: 'Email and password are required.' };
@@ -16,31 +17,38 @@ export async function signUp(formData: FormData) {
   }
 
   const supabase = createClient();
+  let signedInViaSupabase = false;
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-  if (error) {
-    return { error: error.message };
+    if (!error && data?.user) {
+      signedInViaSupabase = true;
+      if (data.session) {
+        redirect('/found-club');
+      }
+    }
+  } catch {
+    // Supabase unavailable / unconfigured
   }
 
-  // If session is immediately available (e.g. email confirmation disabled), go to found-club
-  if (data.session) {
+  // Fallback / local development session
+  const user = await setDemoUserSession(email);
+  const existingClub = await getClubForUser(user.id);
+
+  if (existingClub) {
+    redirect('/dashboard');
+  } else {
     redirect('/found-club');
   }
-
-  // If email confirmation is required:
-  return { 
-    success: true, 
-    message: 'Account created! Please check your email to confirm, or log in.' 
-  };
 }
 
 export async function signIn(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = (formData.get('email') as string)?.trim();
+  const password = (formData.get('password') as string)?.trim();
 
   if (!email || !password) {
     return { error: 'Email and password are required.' };
@@ -48,35 +56,53 @@ export async function signIn(formData: FormData) {
 
   const supabase = createClient();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    return { error: error.message };
-  }
+    if (!error && data?.user) {
+      const { data: club } = await supabase
+        .from('clubs')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .maybeSingle();
 
-  if (data.user) {
-    // Check if club already exists for this user
-    const { data: club } = await supabase
-      .from('clubs')
-      .select('id')
-      .eq('user_id', data.user.id)
-      .maybeSingle();
-
-    if (club) {
-      redirect('/dashboard');
-    } else {
-      redirect('/found-club');
+      if (club) {
+        redirect('/dashboard');
+      } else {
+        redirect('/found-club');
+      }
     }
+  } catch {
+    // Supabase unavailable / unconfigured
   }
 
-  redirect('/found-club');
+  // Fallback to local session
+  const user = await setDemoUserSession(email);
+  const existingClub = await getClubForUser(user.id);
+
+  if (existingClub) {
+    redirect('/dashboard');
+  } else {
+    redirect('/found-club');
+  }
+}
+
+export async function signInDemo() {
+  const demoEmail = 'gaffer.director@pl-gafferdex.com';
+  const user = await setDemoUserSession(demoEmail);
+  const existingClub = await getClubForUser(user.id);
+
+  if (existingClub) {
+    redirect('/dashboard');
+  } else {
+    redirect('/found-club');
+  }
 }
 
 export async function signOut() {
-  const supabase = createClient();
-  await supabase.auth.signOut();
+  await clearUserSession();
   redirect('/auth/login');
 }

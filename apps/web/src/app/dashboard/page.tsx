@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
+import { getCurrentUser, getClubForUser, getClubRoster } from '@/lib/session';
 import RosterTable from './RosterTable';
 import { 
   Coins, 
@@ -29,60 +29,31 @@ const BADGE_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default async function DashboardPage() {
-  const supabase = createClient();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect('/auth/login');
   }
 
-  const { data: club, error: clubError } = await supabase
-    .from('clubs')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (clubError || !club) {
+  const club = await getClubForUser(user.id);
+  if (!club) {
     redirect('/found-club');
   }
 
   // Fetch full active roster with player details
-  const { data: rosterData } = await supabase
-    .from('club_roster')
-    .select(`
-      id,
-      player_id,
-      acquisition_price,
-      acquired_at,
-      in_starting_xi,
-      players (
-        id,
-        name,
-        real_team,
-        position,
-        current_market_value,
-        form_score,
-        injury_status
-      )
-    `)
-    .eq('club_id', club.id)
-    .order('acquired_at', { ascending: false });
+  const rosterItems = await getClubRoster(club.id);
 
-  const roster = (rosterData || []).map((entry: any) => {
-    const p = entry.players;
-    return {
-      id: entry.id,
-      playerId: entry.player_id,
-      name: p?.name || 'Unknown Player',
-      realTeam: p?.real_team || 'Premier League',
-      position: p?.position || 'MID',
-      acquisitionPrice: Number(entry.acquisition_price) || 0,
-      currentMarketValue: Number(p?.current_market_value) || Number(entry.acquisition_price) || 0,
-      formScore: Number(p?.form_score) || 6.5,
-      injuryStatus: p?.injury_status || 'fit',
-      inStartingXi: Boolean(entry.in_starting_xi),
-    };
-  });
+  const roster = rosterItems.map((entry) => ({
+    id: entry.id,
+    playerId: entry.player_id,
+    name: entry.player?.name || 'Player',
+    realTeam: entry.player?.real_team || 'Premier League',
+    position: entry.player?.position || 'MID',
+    acquisitionPrice: entry.acquisition_price || 0,
+    currentMarketValue: entry.player?.current_market_value || entry.acquisition_price || 0,
+    formScore: entry.player?.form_score || 6.5,
+    injuryStatus: entry.player?.injury_status || 'fit',
+    inStartingXi: Boolean(entry.in_starting_xi),
+  }));
 
   const colors = (club.colors as { primary?: string; secondary?: string }) || {
     primary: '#00FF87',
