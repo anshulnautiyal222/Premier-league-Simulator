@@ -299,7 +299,14 @@ export default function MarketClient({ players, club, ownedPlayerIds }: MarketCl
                             {player.name.substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div>{player.name}</div>
+                            <Link 
+                              href={`/players/${player.id}`}
+                              className="hover:text-[#00FF87] hover:underline flex items-center gap-1 group text-white"
+                              title="View valuation history chart"
+                            >
+                              <span>{player.name}</span>
+                              <TrendingUp className="w-3 h-3 text-slate-500 group-hover:text-[#00FF87] opacity-60 group-hover:opacity-100 transition-all" />
+                            </Link>
                             <div className="text-[10px] text-slate-400 font-normal font-mono">
                               {player.contract_months_remaining}m contract
                             </div>
@@ -341,7 +348,7 @@ export default function MarketClient({ players, club, ownedPlayerIds }: MarketCl
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[11px] text-rose-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                             Injured
                           </span>
                         )}
@@ -352,35 +359,45 @@ export default function MarketClient({ players, club, ownedPlayerIds }: MarketCl
                         £{Number(player.current_market_value).toLocaleString('en-GB')}
                       </td>
 
-                      {/* Buy Action */}
+                      {/* Buy Action & Chart */}
                       <td className="px-4 py-3.5 text-center">
-                        {isOwned ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#00FF87]/10 text-[#00FF87] border border-[#00FF87]/30 text-[11px] font-semibold">
-                            <Check className="w-3.5 h-3.5" />
-                            In Squad
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => handleBuy(player)}
-                            disabled={!canAfford || isPending || isBuying}
-                            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 mx-auto ${
-                              canAfford
-                                ? 'bg-[#00FF87] text-black hover:bg-[#00e67a] active:scale-95 shadow-sm'
-                                : 'bg-[#161F30] text-slate-500 border border-[#22304A] cursor-not-allowed'
-                            }`}
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/players/${player.id}`}
+                            className="p-1.5 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-slate-400 hover:text-[#00FF87] transition-colors"
+                            title="View Chart"
                           >
-                            {isBuying ? (
-                              <>
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                                <span>Signing...</span>
-                              </>
-                            ) : canAfford ? (
-                              <span>Buy Card</span>
-                            ) : (
-                              <span>Low Funds</span>
-                            )}
-                          </button>
-                        )}
+                            <TrendingUp className="w-3.5 h-3.5" />
+                          </Link>
+
+                          {isOwned ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#00FF87]/10 text-[#00FF87] border border-[#00FF87]/30 text-[11px] font-semibold">
+                              <Check className="w-3.5 h-3.5" />
+                              In Squad
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleBuy(player)}
+                              disabled={!canAfford || isPending || isBuying}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                                canAfford
+                                  ? 'bg-[#00FF87] text-black hover:bg-[#00e67a] active:scale-95 shadow-sm'
+                                  : 'bg-[#161F30] text-slate-500 border border-[#22304A] cursor-not-allowed'
+                              }`}
+                            >
+                              {isBuying ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  <span>Signing...</span>
+                                </>
+                              ) : canAfford ? (
+                                <span>Buy</span>
+                              ) : (
+                                <span>Low Funds</span>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

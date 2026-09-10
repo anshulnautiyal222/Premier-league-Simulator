@@ -162,7 +162,14 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
                             {player.name.substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div>{player.name}</div>
+                            <Link
+                              href={`/players/${player.playerId}`}
+                              className="hover:text-[#00FF87] hover:underline flex items-center gap-1 group text-white"
+                              title="View valuation history chart"
+                            >
+                              <span>{player.name}</span>
+                              <TrendingUp className="w-3 h-3 text-slate-500 group-hover:text-[#00FF87] opacity-60 group-hover:opacity-100 transition-all" />
+                            </Link>
                             <div className="text-[10px] text-slate-400 font-normal">
                               Form: {player.formScore.toFixed(1)}/10
                             </div>
