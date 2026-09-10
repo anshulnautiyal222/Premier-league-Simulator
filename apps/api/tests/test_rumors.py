@@ -123,3 +123,19 @@ def test_vote_nonexistent_rumor():
     """Ensure 404 is returned for unknown rumor UUID."""
     res = client.post("/api/v1/rumors/nonexistent-id/vote", json={"vote": "deal"})
     assert res.status_code == 404
+
+
+def test_scouting_level_gates_embargoed_rumor_feed():
+    """Public embargo is 15m; a 5-minute-old scoop is early-access only at high scouting tiers."""
+    public = client.get("/api/v1/rumors?scouting_level=1")
+    assert public.status_code == 200
+    public_ids = {item["id"] for item in public.json()}
+    assert "20000000-0000-0000-0000-000000000099" not in public_ids
+
+    elite = client.get("/api/v1/rumors?scouting_level=5")
+    assert elite.status_code == 200
+    elite_rows = elite.json()
+    elite_ids = {item["id"] for item in elite_rows}
+    assert "20000000-0000-0000-0000-000000000099" in elite_ids
+    breaking = next(item for item in elite_rows if item["id"] == "20000000-0000-0000-0000-000000000099")
+    assert breaking["early_access"] is True

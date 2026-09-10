@@ -15,7 +15,8 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeftRight,
-  Trophy
+  Trophy,
+  Gavel
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -118,11 +119,19 @@ export default async function DashboardPage() {
             </Link>
 
             <Link
+              href="/draft"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00FF87] hover:bg-[#00e67a] text-black font-bold text-xs transition-all shadow-sm"
+            >
+              <Gavel className="w-3.5 h-3.5" />
+              <span>Draft Room</span>
+            </Link>
+
+            <Link
               href="/leaderboards"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFD700]/10 hover:bg-[#FFD700]/20 border border-[#FFD700]/30 text-[#FFD700] font-bold text-xs transition-all shadow-sm"
             >
               <Trophy className="w-3.5 h-3.5" />
-              <span>Leaderboards</span>
+              <span>Standings</span>
             </Link>
 
 
@@ -156,9 +165,9 @@ export default async function DashboardPage() {
         >
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#00FF87]/10 border border-[#00FF87]/30 text-[#00FF87] mb-3">
-                <span className="w-2 h-2 rounded-full bg-[#00FF87] animate-pulse" />
-                Boardroom & Sporting Directorship
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[#38BDF8] mb-3">
+                <Shield className="w-3 h-3 text-[#38BDF8]" />
+                League World · 16-Club Universe
               </div>
               <h1 className="text-3xl font-black text-white tracking-tight">
                 {club.club_name}
@@ -168,12 +177,19 @@ export default async function DashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/draft"
+                className="px-5 py-3 rounded-xl bg-[#00FF87] text-black font-extrabold text-xs flex items-center gap-2 hover:bg-[#00e67a] active:scale-95 transition-all shadow-md shadow-[#00FF87]/10"
+              >
+                <Gavel className="w-4 h-4" />
+                <span>Sealed-Bid Draft</span>
+              </Link>
               <Link
                 href="/trades"
-                className="px-5 py-3 rounded-xl bg-[#00FF87] text-black font-black text-xs flex items-center gap-2 hover:bg-[#00e67a] active:scale-95 transition-all shadow-md shadow-[#00FF87]/10"
+                className="px-5 py-3 rounded-xl bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-white font-bold text-xs flex items-center gap-2 transition-all"
               >
-                <span>P2P Transfer Desk</span>
+                <span>P2P Transfers</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

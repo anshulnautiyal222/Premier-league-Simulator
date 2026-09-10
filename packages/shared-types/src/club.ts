@@ -7,6 +7,7 @@ export interface FacilityLevels {
 export interface Club {
   id: string;
   userId: string;
+  leagueId?: string;
   clubName: string;
   clubBadgeUrl?: string;
   primaryColor: string;
@@ -14,6 +15,8 @@ export interface Club {
   homeGroundName: string;
   virtualPurseBalance: number;
   totalSquadValue: number;
+  draftCredits?: number;
+  championCoins?: number;
   facilityLevels: FacilityLevels;
   lastDividendAt: string;
   createdAt: string;
@@ -23,6 +26,7 @@ export interface Club {
 export interface ClubRosterEntry {
   id: string;
   clubId: string;
+  leagueId?: string;
   playerId: string;
   acquisitionPrice: number;
   acquiredAt: string;

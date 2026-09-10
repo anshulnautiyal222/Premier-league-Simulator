@@ -2,6 +2,14 @@
 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { getCurrentUser, getClubForUser } from '@/lib/session';
+import { SAMPLE_RUMORS, type RumorItem } from '@/lib/data/rumors';
+import {
+  clampFacilityLevel,
+  scoutingEarlyMinutes,
+  isRumorVisible,
+  isRumorEarlyAccess,
+} from '@/lib/facilities';
 
 const API_BASE_URL = process.env.API_URL || 'http://127.0.0.1:8000';
 const VOTED_COOKIE_NAME = 'gafferdex_voted_rumors';
@@ -124,4 +132,77 @@ export async function submitRumorAction(formData: FormData) {
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to ingest rumor.' };
   }
+}
+
+function applyScoutingFilter(
+  rumors: RumorItem[],
+  scoutingLevel: number
+): Array<RumorItem & { early_access: boolean }> {
+  return rumors
+    .filter((r) => isRumorVisible(r.created_at, scoutingLevel))
+    .map((r) => ({
+      ...r,
+      early_access: isRumorEarlyAccess(r.created_at, scoutingLevel),
+    }));
+}
+
+function liveEmbargoedScoop(): RumorItem {
+  const created = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  return {
+    id: '20000000-0000-0000-0000-000000000099',
+    player_id: '10000000-0000-0000-0000-000000000016',
+    player_name: 'Bukayo Saka',
+    real_team: 'Arsenal',
+    position: 'MID',
+    current_market_value: 125000000,
+    source_name: 'Fabrizio Romano',
+    tier_rating: 1,
+    tier_label: 'Tier 1 • Definitive / Elite Source',
+    tier_color: 'emerald',
+    buying_club: 'Real Madrid',
+    fee_estimate: 140000000,
+    headline: 'BREAKING: Real Madrid make concrete enquiry for Bukayo Saka — here we go pending',
+    status: 'active',
+    upvotes: 12,
+    downvotes: 3,
+    total_votes: 15,
+    deal_percentage: 80,
+    delusion_percentage: 20,
+    rumor_multiplier: 0.18,
+    rumor_multiplier_pct: '+18.0%',
+    created_at: created,
+  };
+}
+
+export async function getScoutedRumors(): Promise<{
+  rumors: Array<RumorItem & { early_access: boolean }>;
+  earlyMinutes: number;
+}> {
+  const user = await getCurrentUser();
+  const club = user ? await getClubForUser(user.id) : null;
+  const scoutingLevel = clampFacilityLevel(club?.scouting_level);
+  const earlyMinutes = scoutingEarlyMinutes(scoutingLevel);
+
+  let rumorsList: RumorItem[] = SAMPLE_RUMORS;
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/rumors?scouting_level=${scoutingLevel}`,
+      { cache: 'no-store', headers: { 'Content-Type': 'application/json' } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        rumorsList = data;
+      }
+    }
+  } catch {
+    // fallback
+  }
+
+  const breaking = liveEmbargoedScoop();
+  const withLive = [breaking, ...rumorsList.filter((r) => r.id !== breaking.id)];
+  return {
+    rumors: applyScoutingFilter(withLive, scoutingLevel),
+    earlyMinutes,
+  };
 }

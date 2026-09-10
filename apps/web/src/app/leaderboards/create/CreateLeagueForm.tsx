@@ -35,7 +35,7 @@ export default function CreateLeagueForm({ club }: CreateLeagueFormProps) {
       if (res.success) {
         setNotification({ type: 'success', message: 'League created successfully!' });
         setTimeout(() => {
-          router.push(`/leaderboards/league/${res.data.league_id}`);
+          router.push('/leaderboards');
         }, 1000);
       } else {
         setNotification({ type: 'error', message: res.error || 'Failed to create league.' });

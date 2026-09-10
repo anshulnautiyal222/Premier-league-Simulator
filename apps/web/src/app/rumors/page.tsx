@@ -1,20 +1,20 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, getClubForUser } from '@/lib/session';
-import { SAMPLE_RUMORS, RumorItem } from '@/lib/data/rumors';
-import { getVotedRumorIds } from './actions';
+import { getVotedRumorIds, getScoutedRumors } from './actions';
 import RumorDeck from './RumorDeck';
-import { 
-  Flame, 
-  Coins, 
-  TrendingUp, 
-  Building2, 
-  LogOut, 
-  Shield, 
-  Crown, 
-  Anchor, 
-  Target, 
+import {
+  Flame,
+  Coins,
+  TrendingUp,
+  ArrowLeftRight,
+  Building2,
+  LogOut,
+  Shield,
+  Crown,
+  Anchor,
+  Target,
   Sparkles,
-  Radio
+  Radio,
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from '@/app/auth/actions';
@@ -30,8 +30,6 @@ const BADGE_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   preset_star: Sparkles,
 };
 
-const API_BASE_URL = process.env.API_URL || 'http://127.0.0.1:8000';
-
 export default async function RumorsPage() {
   const user = await getCurrentUser();
   if (!user) {
@@ -43,23 +41,7 @@ export default async function RumorsPage() {
     redirect('/found-club');
   }
 
-  // Fetch active rumors from FastAPI backend with fallback
-  let rumorsList: RumorItem[] = SAMPLE_RUMORS;
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/rumors`, {
-      cache: 'no-store',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        rumorsList = data;
-      }
-    }
-  } catch {
-    // Graceful fallback to SAMPLE_RUMORS
-  }
-
+  const { rumors: rumorsList, earlyMinutes } = await getScoutedRumors();
   const votedRumorIds = await getVotedRumorIds();
   const purseBalance = Number(club.virtual_purse_balance) || 100000000;
 
@@ -72,11 +54,10 @@ export default async function RumorsPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0E17] text-slate-100 pb-16">
-      {/* Top Navigation */}
       <header className="border-b border-[#22304A] bg-[#111827]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="w-9 h-9 rounded-lg flex items-center justify-center border font-bold"
               style={{
                 backgroundColor: colors.secondary || '#0A0E17',
@@ -89,26 +70,33 @@ export default async function RumorsPage() {
             <div>
               <span className="font-bold text-white tracking-tight">{club.club_name}</span>
               <span className="block text-[10px] uppercase tracking-wider font-mono text-slate-400">
-                Sporting Director Terminal
+                Sporting Director Terminal · Scouting +{earlyMinutes}m
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
-              href="/dashboard"
+              href="/academy"
               className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-slate-200 transition-colors"
             >
               <Building2 className="w-3.5 h-3.5" />
-              <span>Squad & Finances</span>
+              <span>Facilities</span>
             </Link>
 
             <Link
-              href="/market"
+              href="/dashboard"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-slate-200 transition-colors"
+            >
+              <span>Squad</span>
+            </Link>
+
+            <Link
+              href="/trades"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-slate-200 transition-colors"
             >
-              <TrendingUp className="w-3.5 h-3.5 text-[#00FF87]" />
-              <span>Transfer Desk</span>
+              <ArrowLeftRight className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <span>P2P Trades</span>
             </Link>
 
             <div className="flex items-center gap-2 text-xs bg-[#161F30] px-3 py-1.5 rounded-full border border-[#22304A]">
@@ -132,7 +120,6 @@ export default async function RumorsPage() {
         </div>
       </header>
 
-      {/* Breaking News Ticker Banner */}
       <div className="bg-[#0D1524] border-b border-[#22304A] py-2 px-4 overflow-hidden shadow-inner">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-mono font-bold uppercase shrink-0">
@@ -144,6 +131,9 @@ export default async function RumorsPage() {
             <div className="absolute whitespace-nowrap text-xs text-slate-300 font-mono animate-[marquee_25s_linear_infinite] flex items-center gap-8">
               {rumorsList.map((r) => (
                 <span key={r.id} className="flex items-center gap-2">
+                  {r.early_access && (
+                    <span className="text-[#38BDF8] font-bold">[EARLY]</span>
+                  )}
                   <span className="text-[#00FF87] font-bold">[{r.tier_label.split('•')[0].trim()}]</span>
                   <span>{r.source_name}:</span>
                   <span className="text-white font-semibold">{r.headline}</span>
@@ -155,7 +145,6 @@ export default async function RumorsPage() {
         </div>
       </div>
 
-      {/* Main Content Stage */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <RumorDeck
           initialRumors={rumorsList}

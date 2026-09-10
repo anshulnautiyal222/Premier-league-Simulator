@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { SAMPLE_PLAYERS, type SeedPlayer } from './data/players';
+import { ROOKIE_PLAYERS } from './data/rookies';
 
 export interface UserSession {
   id: string;
@@ -19,6 +20,9 @@ export interface ClubSession {
   home_ground_name: string;
   virtual_purse_balance: number;
   total_squad_value: number;
+  league_id?: string;
+  draft_credits?: number;
+  championCoins?: number;
   academy_level: number;
   scouting_level: number;
   stadium_level: number;
@@ -29,6 +33,7 @@ export interface ClubSession {
 export interface RosterItem {
   id: string;
   club_id: string;
+  league_id?: string;
   player_id: string;
   acquisition_price: number;
   acquired_at: string;
@@ -138,6 +143,9 @@ export async function saveClubSession(clubData: Omit<ClubSession, 'id'>): Promis
   const supabase = createClient();
 
   const club: ClubSession = {
+    league_id: '00000000-0000-0000-0000-000000000001',
+    draft_credits: 500,
+    championCoins: 0,
     ...clubData,
     id: `clb_${Date.now()}`,
     created_at: new Date().toISOString(),
@@ -147,11 +155,14 @@ export async function saveClubSession(clubData: Omit<ClubSession, 'id'>): Promis
   try {
     await supabase.from('clubs').insert({
       user_id: club.user_id,
+      league_id: club.league_id,
       club_name: club.club_name,
       badge_url: club.badge_url,
       colors: club.colors,
       home_ground_name: club.home_ground_name,
       virtual_purse_balance: club.virtual_purse_balance,
+      draft_credits: club.draft_credits,
+      champion_coins: club.championCoins,
       total_squad_value: club.total_squad_value,
       academy_level: club.academy_level,
       scouting_level: club.scouting_level,
@@ -244,7 +255,8 @@ export async function getClubRoster(clubId: string): Promise<RosterItem[]> {
       const storedList: Array<{ id: string; club_id: string; player_id: string; acquisition_price: number; acquired_at: string; in_starting_xi: boolean }> = JSON.parse(rosterCookie);
       const filtered = storedList.filter(r => r.club_id === clubId);
       return filtered.map(r => {
-        const player = SAMPLE_PLAYERS.find(p => p.id === r.player_id) || {
+        const player = SAMPLE_PLAYERS.find(p => p.id === r.player_id)
+          || ROOKIE_PLAYERS.find(p => p.id === r.player_id) || {
           id: r.player_id,
           name: 'Player',
           real_team: 'Premier League',
@@ -268,11 +280,11 @@ export async function getClubRoster(clubId: string): Promise<RosterItem[]> {
   return [];
 }
 
-export async function addPlayerToRoster(clubId: string, player: SeedPlayer) {
+export async function addPlayerToRoster(clubId: string, player: SeedPlayer, leagueId?: string) {
   const cookieStore = cookies();
   const supabase = createClient();
 
-  const entry = {
+  const entry: Record<string, any> = {
     id: `rst_${Date.now()}`,
     club_id: clubId,
     player_id: player.id,
@@ -280,6 +292,9 @@ export async function addPlayerToRoster(clubId: string, player: SeedPlayer) {
     acquired_at: new Date().toISOString(),
     in_starting_xi: false,
   };
+  if (leagueId) {
+    entry.league_id = leagueId;
+  }
 
   // Try Supabase insert
   try {

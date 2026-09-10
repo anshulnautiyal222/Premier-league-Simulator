@@ -48,6 +48,11 @@ export async function proposeTradeAction(
       return { error: 'Recipient club not found.' };
     }
     recipientClub = club;
+
+    // Validate intra-league trading (SPEC v2)
+    if (proposerClub.league_id && recipientClub.league_id && proposerClub.league_id !== recipientClub.league_id) {
+      return { error: 'Cross-league trading is prohibited. Trades can only occur between clubs in the same League World.' };
+    }
   } catch {
     return { error: 'Failed to validate recipient club.' };
   }
