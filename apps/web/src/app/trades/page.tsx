@@ -47,11 +47,10 @@ export default async function TradesPage() {
 
           <div className="flex items-center gap-4">
             <Link
-              href="/market"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00FF87] text-black font-bold text-xs hover:bg-[#00e67a] transition-all shadow-sm"
+              href="/dashboard"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-slate-200 transition-colors"
             >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Transfer Market</span>
+              <span>Dashboard</span>
             </Link>
           </div>
         </div>

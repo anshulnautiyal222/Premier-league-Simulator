@@ -71,21 +71,13 @@ Simulates real-world contract leverage and physical setbacks:
 
 ---
 
-## 3. Automated Market Maker (AMM) Liquidity Pool
+## 3. ~~Automated Market Maker (AMM) Liquidity Pool~~ — DEPRECATED
 
-### 3.1 Instant Liquidity Guarantee
-Users do not have to wait for another user to buy their player. The AMM acts as the central counterparty:
-- **Buy Price (Ask)**: $\text{Current Price}$
-- **Sell Price (Bid)**: $\text{Current Price} \times (1 - \text{Spread})$
-  - Normal conditions: $\text{Spread} = 3.0\%$ (broker fee)
-  - Extreme volatility conditions: $\text{Spread} = 5.0\%$
-
-### 3.2 Dynamic Spread & Volatility Circuit Breakers
-If a player's price shifts by more than $20\%$ within a 6-hour window:
-- Trading spread temporarily widens to prevent predatory arbitrage.
-- **Single Gameweek Hard Limits**:
-  - **Hard Floor**: $\text{Current Price} \ge 0.40 \times \text{Base Value}$
-  - **Hard Ceiling**: $\text{Current Price} \le 2.50 \times \text{Base Value}$
+> [!WARNING]
+> The AMM liquidity pool described in this section has been removed. Players are no longer
+> bought or sold through a central automated market maker with instant liquidity and a 3% broker fee.
+> Player transfers now occur exclusively through peer-to-peer (P2P) negotiations within private League Worlds.
+> The algorithmic pricing formulas in Sections 1–2 and the anti-exploit rules in Section 4 remain in effect.
 
 ---
 
@@ -99,7 +91,7 @@ If cash addition deviates by more than $20\%$ from the fair market delta:
 - Prevents users from spinning up secondary demo accounts to feed £150M purses into a single primary club.
 
 ### 4.2 Velocity Caps (Daily Quota)
-- Each club is granted **5 AMM trades per rolling 24-hour period**.
+- Each club is granted **5 trade proposals per rolling 24-hour period**.
 - During real-world Premier League Transfer Deadline Days (Summer Deadline & Winter Deadline), the quota automatically expands to **25 trades per day** to simulate deadline madness.
 
 ### 4.3 Mandatory Roster Size

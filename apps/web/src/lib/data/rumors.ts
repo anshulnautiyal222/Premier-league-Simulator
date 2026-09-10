@@ -23,6 +23,7 @@ export interface RumorItem {
   rumor_multiplier: number;
   rumor_multiplier_pct: string;
   created_at: string;
+  early_access?: boolean;
 }
 
 export const TIER_CONFIG = {

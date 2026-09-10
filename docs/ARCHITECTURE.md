@@ -49,6 +49,10 @@ This document details the technical blueprints, component boundaries, relational
                                   └─────────────────────────────────────────┘
 ```
 
+> [!NOTE]
+> The "Trading & AMM Engine" shown in the diagram above has been deprecated. The platform now uses
+> P2P trades within private League Worlds instead of a global AMM buy/sell desk.
+
 ---
 
 ## 2. Database Schema (PostgreSQL / Supabase DDL)
@@ -206,11 +210,11 @@ CREATE INDEX idx_p2p_parties ON public.p2p_proposals(proposer_club_id, recipient
 - `POST /api/v1/club/lineup`: Set 11-player starting roster for upcoming weekend matchdays.
 - `POST /api/v1/club/facilities/upgrade`: Upgrade Stadium, Academy, or Scouting tier.
 
-### 3.2 Automated Market Maker (AMM) Execution
-- `GET /api/v1/market/players`: Paginated list of players with filters (position, price, team, 24h change, sort).
-- `GET /api/v1/market/players/:id`: Detailed player dossier (stats, price chart history, active rumors, valuation breakdown).
-- `POST /api/v1/market/buy`: Execute instant AMM purchase (validates balance, FFP cap, squad limit $\le 25$).
-- `POST /api/v1/market/sell`: Execute instant AMM liquidation (deducts 3% broker fee, enforces squad floor $\ge 11$).
+### 3.2 ~~Automated Market Maker (AMM) Execution~~ — DEPRECATED
+
+> [!WARNING]
+> The AMM buy/sell endpoints have been removed. Player acquisition now occurs through
+> P2P trades (Section 3.4) and Academy minting within private League Worlds.
 
 ### 3.3 Rumor Terminal & Community Consensus
 - `GET /api/v1/rumors/feed`: Real-time streaming rumor list categorized by credibility tier.

@@ -11,7 +11,7 @@ from app.api.v1.rumors import router as rumors_router
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Market Calculation Engine, AMM Liquidity, and Rumor Terminal for GafferDex"
+    description="Market Calculation Engine, Pricing Engine, and Rumor Terminal for GafferDex"
 )
 
 # Configure CORS for Next.js frontend

@@ -1,11 +1,7 @@
 'use client';
-
-import { useState, useTransition } from 'react';
-import { sellPlayerAction } from '@/app/market/actions';
+import { useState } from 'react';
 import { 
   Users, 
-  Trash2, 
-  Loader2, 
   AlertCircle, 
   Check, 
   TrendingUp, 
@@ -41,36 +37,7 @@ const POSITION_COLORS: Record<string, string> = {
 };
 
 export default function RosterTable({ roster, purseBalance }: RosterTableProps) {
-  const [sellingId, setSellingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const handleSell = (player: RosterPlayer) => {
-    const brokerFee = Math.round(player.currentMarketValue * 0.03);
-    const netProceeds = player.currentMarketValue - brokerFee;
-    const confirmSell = window.confirm(
-      `Liquidate ${player.name}?\n\nGross Value: £${player.currentMarketValue.toLocaleString()}\nBroker Fee (3%): -£${brokerFee.toLocaleString()}\nNet Proceeds: £${netProceeds.toLocaleString()}\n\nProceed?`
-    );
-
-    if (!confirmSell) return;
-
-    setNotification(null);
-    setSellingId(player.playerId);
-
-    startTransition(async () => {
-      const res = await sellPlayerAction(player.playerId);
-      setSellingId(null);
-
-      if (res.error) {
-        setNotification({ type: 'error', message: res.error });
-      } else {
-        setNotification({
-          type: 'success',
-          message: `Liquidated ${player.name} for £${netProceeds.toLocaleString('en-GB')} net (3% fee applied).`,
-        });
-      }
-    });
-  };
 
   return (
     <div className="space-y-4">
@@ -81,15 +48,15 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
             Active Club Roster ({roster.length} / 25 Players)
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Hold player cards for capital appreciation or liquidate back to the market pool.
+            Manage your squad and trade player assets with rival managers.
           </p>
         </div>
 
         <Link
-          href="/market"
+          href="/trades"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00FF87] text-black font-bold text-xs hover:bg-[#00e67a] active:scale-95 transition-all shadow-sm"
         >
-          <span>Open Transfer Desk</span>
+          <span>P2P Trades</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
@@ -120,13 +87,13 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
           <ShieldAlert className="w-10 h-10 text-slate-500 mx-auto mb-3" />
           <h3 className="text-base font-bold text-white">No Players Signed Yet</h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-5">
-            Your £{purseBalance.toLocaleString('en-GB')} purse is waiting. Head to the transfer market to sign your first Premier League stars and wonderkids.
+            Your £{purseBalance.toLocaleString('en-GB')} purse is waiting. Negotiate player swaps with rival managers or scout academy prospects.
           </p>
           <Link
-            href="/market"
+            href="/trades"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#00FF87] text-black font-extrabold text-xs hover:bg-[#00e67a] transition-all"
           >
-            <span>Browse Transfer Market</span>
+            <span>Open P2P Trades</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -142,7 +109,6 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
                   <th className="px-4 py-3.5 text-right">Bought For</th>
                   <th className="px-4 py-3.5 text-right">Current Value</th>
                   <th className="px-4 py-3.5 text-right">PnL (Return)</th>
-                  <th className="px-4 py-3.5 text-center">Liquidate</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#22304A]/60">
@@ -151,7 +117,6 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
                   const pnlPercent = player.acquisitionPrice > 0 
                     ? ((pnl / player.acquisitionPrice) * 100).toFixed(1) 
                     : '0.0';
-                  const isSelling = sellingId === player.playerId;
 
                   return (
                     <tr key={player.id} className="hover:bg-[#161F30]/60 transition-colors">
@@ -207,25 +172,6 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
                           <span className="text-[10px] text-slate-400">({pnlPercent}%)</span>
                         </div>
                       </td>
-
-                      {/* Sell Action */}
-                      <td className="px-4 py-3.5 text-center">
-                        <button
-                          onClick={() => handleSell(player)}
-                          disabled={isPending || isSelling}
-                          title="Liquidate player (-3% broker fee)"
-                          className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center justify-center gap-1.5 mx-auto transition-colors disabled:opacity-40"
-                        >
-                          {isSelling ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <>
-                              <Trash2 className="w-3 h-3" />
-                              <span>Sell</span>
-                            </>
-                          )}
-                        </button>
-                      </td>
                     </tr>
                   );
                 })}
@@ -233,8 +179,7 @@ export default function RosterTable({ roster, purseBalance }: RosterTableProps) 
             </table>
           </div>
 
-          <div className="px-4 py-2.5 bg-[#161F30] border-t border-[#22304A] flex items-center justify-between text-[11px] text-slate-400">
-            <span>Platform Broker Fee: <strong>3% deducted upon liquidation</strong></span>
+          <div className="px-4 py-2.5 bg-[#161F30] border-t border-[#22304A] flex items-center justify-end text-[11px] text-slate-400">
             <span>Roster capacity: <strong>{roster.length} / 25</strong></span>
           </div>
         </div>

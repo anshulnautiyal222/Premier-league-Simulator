@@ -122,11 +122,11 @@ export default function RumorDeck({ initialRumors, votedRumorIds, clubPurse }: R
           </button>
 
           <Link
-            href="/market"
+            href="/trades"
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00FF87] hover:bg-[#00e67a] text-black text-xs font-bold transition-all shadow-sm"
           >
             <Coins className="w-3.5 h-3.5" />
-            <span>Transfer Desk</span>
+            <span>P2P Trades</span>
           </Link>
         </div>
       </div>
@@ -207,11 +207,11 @@ export default function RumorDeck({ initialRumors, votedRumorIds, clubPurse }: R
                 <span>Reset Deck</span>
               </button>
               <Link
-                href="/market"
+                href="/trades"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#00FF87] hover:bg-[#00e67a] text-black text-xs font-bold transition-all shadow-md"
               >
                 <Coins className="w-3.5 h-3.5" />
-                <span>Trade in Market</span>
+                <span>Open P2P Trades</span>
               </Link>
             </div>
           </motion.div>
@@ -368,9 +368,16 @@ function SwipeCard({ rumor, onVote, hasVoted, votedChoice }: SwipeCardProps) {
 
       {/* Top Bar: Credibility Tier Badge & Time */}
       <div className="flex items-center justify-between gap-2 z-10">
-        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold font-mono tracking-wide ${tierConfig.bg} ${tierConfig.border} ${tierConfig.text} ${tierConfig.badgeGlow}`}>
-          <Shield className="w-3.5 h-3.5" />
-          <span>{tierConfig.tag}</span>
+        <div className="flex items-center gap-2">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold font-mono tracking-wide ${tierConfig.bg} ${tierConfig.border} ${tierConfig.text} ${tierConfig.badgeGlow}`}>
+            <Shield className="w-3.5 h-3.5" />
+            <span>{tierConfig.tag}</span>
+          </div>
+          {rumor.early_access && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border border-[#38BDF8]/40 bg-[#38BDF8]/10 text-[#38BDF8] text-[10px] font-mono font-bold uppercase">
+              Early Access
+            </span>
+          )}
         </div>
 
         <span className="text-[10px] font-mono text-slate-400">

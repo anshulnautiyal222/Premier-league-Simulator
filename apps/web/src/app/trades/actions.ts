@@ -7,7 +7,8 @@ import {
   getClubRoster,
   updateClubPurse,
   addPlayerToRoster,
-  removePlayerFromRoster
+  removePlayerFromRoster,
+  type RosterItem
 } from '@/lib/session';
 import { SAMPLE_PLAYERS } from '@/lib/data/players';
 import { revalidatePath } from 'next/cache';
@@ -35,7 +36,7 @@ export async function proposeTradeAction(
   const supabase = createClient();
 
   // 1. Validate recipient club exists
-  let recipientClub;
+  let recipientClub: any;
   try {
     const { data: club, error } = await supabase
       .from('clubs')
@@ -68,7 +69,7 @@ export async function proposeTradeAction(
   }
 
   // 4. Get recipient roster to validate their constraints
-  let recipientRoster;
+  let recipientRoster: RosterItem[] = [];
   try {
     recipientRoster = await getClubRoster(recipientClubId);
   } catch {
@@ -253,7 +254,7 @@ export async function acceptTradeAction(tradeId: string) {
   }
 
   // Get proposer club for purse update
-  let proposerClub;
+  let proposerClub: any;
   try {
     const { data: pc } = await supabase
       .from('clubs')

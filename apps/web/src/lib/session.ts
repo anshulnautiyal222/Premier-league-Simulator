@@ -22,6 +22,7 @@ export interface ClubSession {
   academy_level: number;
   scouting_level: number;
   stadium_level: number;
+  last_dividend_at?: string;
   created_at?: string;
 }
 
@@ -155,6 +156,7 @@ export async function saveClubSession(clubData: Omit<ClubSession, 'id'>): Promis
       academy_level: club.academy_level,
       scouting_level: club.scouting_level,
       stadium_level: club.stadium_level,
+      last_dividend_at: club.last_dividend_at,
     });
   } catch {
     // ignore fallback
@@ -171,32 +173,33 @@ export async function saveClubSession(clubData: Omit<ClubSession, 'id'>): Promis
 }
 
 export async function updateClubPurse(userId: string, newPurse: number, newSquadValue: number) {
+  await patchClubSession(userId, {
+    virtual_purse_balance: newPurse,
+    total_squad_value: newSquadValue,
+  });
+}
+
+export async function patchClubSession(userId: string, patch: Partial<ClubSession>) {
   const cookieStore = cookies();
   const supabase = createClient();
 
-  // 1. Update Supabase if available
   try {
-    await supabase
-      .from('clubs')
-      .update({
-        virtual_purse_balance: newPurse,
-        total_squad_value: newSquadValue,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId);
+    const dbPatch: Record<string, unknown> = { ...patch, updated_at: new Date().toISOString() };
+    delete dbPatch.id;
+    delete dbPatch.user_id;
+    delete dbPatch.created_at;
+    await supabase.from('clubs').update(dbPatch).eq('user_id', userId);
   } catch {
     // ignore
   }
 
-  // 2. Update demo cookie
   const clubCookie = cookieStore.get(DEMO_CLUB_COOKIE)?.value;
   if (clubCookie) {
     try {
       const club: ClubSession = JSON.parse(clubCookie);
       if (club.user_id === userId) {
-        club.virtual_purse_balance = newPurse;
-        club.total_squad_value = newSquadValue;
-        cookieStore.set(DEMO_CLUB_COOKIE, JSON.stringify(club), {
+        const next = { ...club, ...patch };
+        cookieStore.set(DEMO_CLUB_COOKIE, JSON.stringify(next), {
           path: '/',
           httpOnly: true,
           maxAge: 60 * 60 * 24 * 30,
@@ -281,12 +284,6 @@ export async function addPlayerToRoster(clubId: string, player: SeedPlayer) {
   // Try Supabase insert
   try {
     await supabase.from('club_roster').insert(entry);
-    await supabase.from('market_transactions').insert({
-      buyer_club_id: clubId,
-      player_id: player.id,
-      fee: player.current_market_value,
-      transaction_type: 'market_buy',
-    });
   } catch {
     // ignore
   }
