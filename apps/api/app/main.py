@@ -4,6 +4,8 @@ from app.core.config import settings
 import redis
 import time
 
+from app.api.v1.pricing import router as pricing_router
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -18,6 +20,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API routers
+app.include_router(pricing_router, prefix="/api/v1")
 
 
 @app.get("/")
