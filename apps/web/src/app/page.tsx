@@ -84,11 +84,25 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400 bg-[#161F30] px-3 py-1.5 rounded-full border border-[#22304A]">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-[#161F30] px-3 py-1.5 rounded-full border border-[#22304A]">
               <Coins className="w-3.5 h-3.5 text-[#FFD700]" />
               <span>Starting Purse: </span>
-              <strong className="text-white font-mono">£150,000,000</strong>
+              <strong className="text-white font-mono">£100,000,000</strong>
             </div>
+
+            <a
+              href="/auth/login"
+              className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-1.5 transition-colors"
+            >
+              Sign In
+            </a>
+
+            <a
+              href="/auth/signup"
+              className="text-xs font-bold bg-[#00FF87] text-black px-4 py-2 rounded-lg hover:bg-[#00e67a] transition-all shadow-sm"
+            >
+              Found Club
+            </a>
           </div>
         </div>
       </header>
@@ -103,14 +117,30 @@ export default function Home() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[#00FF87]/10 border border-[#00FF87]/30 text-[#00FF87] mb-6">
             <span className="w-2 h-2 rounded-full bg-[#00FF87] animate-pulse" />
-            Monorepo Scaffolding Complete
+            Season 2026/27 Live Exchange
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-6">
             The Fantasy Transfer & <span className="text-[#00FF87]">Club Exchange</span>
           </h1>
-          <p className="text-lg text-slate-400 leading-relaxed">
+          <p className="text-lg text-slate-400 leading-relaxed mb-8">
             Trade real Premier League players with dynamic algorithmic valuations driven by real-world rumors, matchday performance, and market supply & demand.
           </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="/auth/signup"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[#00FF87] text-black font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-[#00e67a] transition-all shadow-lg shadow-[#00FF87]/20"
+            >
+              <span>Found Your Club (£100M Grant)</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="/dashboard"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-slate-200 font-semibold text-sm transition-colors text-center"
+            >
+              Sporting Director Dashboard
+            </a>
+          </div>
         </motion.div>
 
         {/* Stack Status Grid */}
