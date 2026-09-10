@@ -13,7 +13,9 @@ import {
   Anchor,
   Target,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  ArrowLeftRight,
+  Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -97,6 +99,22 @@ export default async function DashboardPage() {
             >
               <Flame className="w-3.5 h-3.5" />
               <span>Rumor Terminal</span>
+            </Link>
+
+            <Link
+              href="/trades"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 border border-[#38BDF8]/30 text-[#38BDF8] font-bold text-xs transition-all shadow-sm"
+            >
+              <ArrowLeftRight className="w-3.5 h-3.5" />
+              <span>P2P Trades</span>
+            </Link>
+
+            <Link
+              href="/leaderboards"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFD700]/10 hover:bg-[#FFD700]/20 border border-[#FFD700]/30 text-[#FFD700] font-bold text-xs transition-all shadow-sm"
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Leaderboards</span>
             </Link>
 
             <Link

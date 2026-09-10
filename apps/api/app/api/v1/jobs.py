@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 from app.jobs.weekly_updater import run_weekly_update_job, get_supabase_client, STANDALONE_PLAYERS
+from app.jobs.trade_expirer import expire_trades_job
 
 router = APIRouter(prefix="/jobs", tags=["Scheduled Jobs & Price History"])
 
@@ -172,3 +173,26 @@ def get_player_price_history(
             )
 
     return points
+
+
+class TradeExpiryResponse(BaseModel):
+    status: str
+    timestamp: str
+    expired_count: int
+    trade_ids: Optional[List[str]] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+
+@router.post("/expire-trades", response_model=TradeExpiryResponse)
+async def trigger_trade_expiry():
+    """Manually triggers the P2P trade expiration job to expire pending trades past their expiry time."""
+    summary = await expire_trades_job()
+    return TradeExpiryResponse(
+        status=summary["status"],
+        timestamp=summary["timestamp"],
+        expired_count=summary["expired_count"],
+        trade_ids=summary.get("trade_ids"),
+        message=summary.get("message"),
+        error=summary.get("error"),
+    )
