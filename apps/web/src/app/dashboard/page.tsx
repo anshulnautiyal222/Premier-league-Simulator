@@ -15,7 +15,8 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeftRight,
-  Trophy
+  Trophy,
+  Gavel
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -94,6 +95,14 @@ export default async function DashboardPage() {
 
           <div className="flex items-center gap-4">
             <Link
+              href="/academy"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-xs font-semibold text-slate-200 transition-all"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#00FF87]" />
+              <span>Facilities</span>
+            </Link>
+
+            <Link
               href="/rumors"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold text-xs transition-all shadow-sm"
             >
@@ -110,20 +119,22 @@ export default async function DashboardPage() {
             </Link>
 
             <Link
+              href="/draft"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00FF87] hover:bg-[#00e67a] text-black font-bold text-xs transition-all shadow-sm"
+            >
+              <Gavel className="w-3.5 h-3.5" />
+              <span>Draft Room</span>
+            </Link>
+
+            <Link
               href="/leaderboards"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFD700]/10 hover:bg-[#FFD700]/20 border border-[#FFD700]/30 text-[#FFD700] font-bold text-xs transition-all shadow-sm"
             >
               <Trophy className="w-3.5 h-3.5" />
-              <span>Leaderboards</span>
+              <span>Standings</span>
             </Link>
 
-            <Link
-              href="/market"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00FF87] text-black font-bold text-xs hover:bg-[#00e67a] transition-all shadow-sm"
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Transfer Desk</span>
-            </Link>
+
 
             <div className="flex items-center gap-2 text-xs bg-[#161F30] px-3 py-1.5 rounded-full border border-[#22304A]">
               <Coins className="w-3.5 h-3.5 text-[#FFD700]" />
@@ -154,9 +165,9 @@ export default async function DashboardPage() {
         >
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#00FF87]/10 border border-[#00FF87]/30 text-[#00FF87] mb-3">
-                <span className="w-2 h-2 rounded-full bg-[#00FF87] animate-pulse" />
-                Boardroom & Sporting Directorship
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[#38BDF8] mb-3">
+                <Shield className="w-3 h-3 text-[#38BDF8]" />
+                League World · 16-Club Universe
               </div>
               <h1 className="text-3xl font-black text-white tracking-tight">
                 {club.club_name}
@@ -166,12 +177,19 @@ export default async function DashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/market"
-                className="px-5 py-3 rounded-xl bg-[#00FF87] text-black font-black text-xs flex items-center gap-2 hover:bg-[#00e67a] active:scale-95 transition-all shadow-md shadow-[#00FF87]/10"
+                href="/draft"
+                className="px-5 py-3 rounded-xl bg-[#00FF87] text-black font-extrabold text-xs flex items-center gap-2 hover:bg-[#00e67a] active:scale-95 transition-all shadow-md shadow-[#00FF87]/10"
               >
-                <span>Browse Transfer Market</span>
+                <Gavel className="w-4 h-4" />
+                <span>Sealed-Bid Draft</span>
+              </Link>
+              <Link
+                href="/trades"
+                className="px-5 py-3 rounded-xl bg-[#161F30] hover:bg-[#22304A] border border-[#22304A] text-white font-bold text-xs flex items-center gap-2 transition-all"
+              >
+                <span>P2P Transfers</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -227,39 +245,41 @@ export default async function DashboardPage() {
         <div className="p-6 rounded-2xl bg-[#111827] border border-[#22304A]">
           <h2 className="text-base font-bold text-white flex items-center gap-2 mb-4">
             <Building2 className="w-4 h-4 text-[#00FF87]" />
-            Club Facilities & Passive Yields
+            <Link href="/academy" className="hover:text-[#00FF87] transition-colors">
+              Club Facilities & Passive Yields
+            </Link>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A]">
+            <Link href="/academy" className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A] hover:border-[#00FF87]/40 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold text-xs text-white">Youth Academy</span>
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161F30] text-[#00FF87] border border-[#22304A]">
                   Tier {club.academy_level || 1}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">Rookie wonderkid token yields</p>
-            </div>
+              <p className="text-[11px] text-slate-400">Discounted rookie token packs</p>
+            </Link>
 
-            <div className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A]">
+            <Link href="/academy" className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A] hover:border-[#38BDF8]/40 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold text-xs text-white">Scouting Radar</span>
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161F30] text-[#38BDF8] border border-[#22304A]">
                   Tier {club.scouting_level || 1}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">15m advance rumor intelligence</p>
-            </div>
+              <p className="text-[11px] text-slate-400">Early rumor_feed access vs public embargo</p>
+            </Link>
 
-            <div className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A]">
+            <Link href="/academy" className="p-4 rounded-xl bg-[#0A0E17] border border-[#22304A] hover:border-[#FFD700]/40 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold text-xs text-white">Commercial Stadium</span>
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161F30] text-[#FFD700] border border-[#22304A]">
                   Tier {club.stadium_level || 1}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">Generates weekly purse dividends</p>
-            </div>
+              <p className="text-[11px] text-slate-400">Weekly purse yield from top-11 appeal</p>
+            </Link>
           </div>
         </div>
       </main>

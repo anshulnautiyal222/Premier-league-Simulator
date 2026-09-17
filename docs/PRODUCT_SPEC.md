@@ -11,93 +11,27 @@ Instead of passive news reading or traditional fantasy football (which focuses o
 
 ---
 
-## 2. Core Game Loop
+## 2–4. Core Game Loop, Feature Modules & Monetization
 
-```
-  ┌────────────────────────────────────────────────────────┐
-  │                 1. Club Founding                       │
-  │  Register -> Name Club -> Design Crest -> £150M Purse  │
-  └──────────────────────────┬─────────────────────────────┘
-                             ▼
-  ┌────────────────────────────────────────────────────────┐
-  │               2. Squad Acquisition                     │
-  │  Open Market Trading -> FFP / PSR Limits (11-25 squad) │
-  └──────────────────────────┬─────────────────────────────┘
-                             ▼
-  ┌────────────────────────────────────────────────────────┐
-  │           3. Dynamic Valuation Shocks                  │
-  │  Real Match Form + Tier-1 Transfer Rumors + AMM Demand │
-  └──────────────────────────┬─────────────────────────────┘
-                             ▼
-  ┌────────────────────────────────────────────────────────┐
-  │               4. Active Dealmaking                     │
-  │  P2P Swaps + AMM Liquidations + 24-hr Deal Window      │
-  └──────────────────────────┬─────────────────────────────┘
-                             ▼
-  ┌────────────────────────────────────────────────────────┐
-  │            5. Growth & Infrastructure                  │
-  │  Reinvest Profits -> Academy, Scouting & Stadium       │
-  └──────────────────────────┬─────────────────────────────┘
-                             ▼
-  ┌────────────────────────────────────────────────────────┐
-  │             6. Leaderboards & Seasons                  │
-  │  Net Worth Leaderboard + Window Showdowns + Fixtures   │
-  └────────────────────────────────────────────────────────┘
-```
-
-1. **Club Founding**: User registers, chooses a club identity (name, badge, home ground, club colors), and receives a starting demo purse (e.g., £150M virtual funds).
-2. **Squad Acquisition**: User signs an initial roster from the open market, balancing stars, high-upside wonderkids, and value veterans under strict Financial Fair Play (FFP/PSR) limits.
-3. **Dynamic Valuation & Market Shocks**: Player prices rise or fall in real time based on:
-   - **Real-world performance**: Goals, assists, clean sheets, and match ratings.
-   - **Real-world transfer dynamics**: Verified Tier-1 rumors (+15%), completed record transfers (+25%), contract expirations (-20%), or injury setbacks.
-   - **In-game user supply & demand**: Active buying and selling within the platform.
-4. **Active Dealmaking**: Users can buy, sell, loan, or offer player-plus-cash swaps to other users or back to the automated central market maker.
-5. **Growth & Progression**: Profits from timely trades can be reinvested into expanding the squad, upgrading club infrastructure (e.g., Academy, Scouting Network, Stadium capacity) to generate passive weekly purse yield.
-6. **Leaderboards & Seasons**: Users compete on seasonal leaderboards based on Club Net Worth, Trading Return on Investment (ROI), and Head-to-Head Squad Battles.
-
----
-
-## 3. Key Feature Modules
-
-### Module A: The Live Transfer & Rumor Terminal
-- **Real-Time Rumor Ticker**: Ingests and categorizes breaking rumors using an automated credibility scale:
-  - **Tier 1**: David Ornstein, Fabrizio Romano, BBC Sport, The Athletic (High market impact: $\pm 15\%$).
-  - **Tier 2–3**: Regional correspondents, established dailies (Moderate impact: $\pm 5-8\%$).
-  - **Tier 4–5**: Tabloids, unverified aggregate feeds (Volatile / High risk of false flag: minimal baseline impact).
-- **Consensus Gauge ("Deal or Delusion")**: Community voting mechanic where users swipe right/left on rumors, displaying community sentiment percentages alongside journalist credibility.
-- **PSR / FFP Visualizer**: Educational financial module showing how real Premier League clubs manage amortization and wage bills, letting fans simulate whether a prospective real-life transfer violates league rules.
-
-### Module B: The Demo Club & Transfer Simulator
-- **Dynamic Automated Market Maker (AMM)**: Ensures instant liquidity so users can always buy or liquidate players without waiting for an exact peer match, adjusting spreads based on market volatility.
-- **Peer-to-Peer (P2P) Trading Desk**:
-  - Direct trade proposals between friends: Cash, Player Swaps, or Player + Cash.
-  - Counter-offers and 24-hour expiration windows.
-- **Club Facility Progression (Passive Boosters)**:
-  - **Youth Academy Level**: Yields discounted randomized rookie tokens with variable market trajectories.
-  - **Scouting Department**: Unlocks early rumor alerts and predictive market indicators 15 minutes before the public feed.
-  - **Commercial Stadium**: Generates weekly demo currency based on squad market appeal.
-
-### Module C: Gamified Competition Modes
-- **Window Showdown (Seasonal Mode)**: Timed tournaments running alongside the Summer and Winter transfer windows. The manager with the highest percentage portfolio return when the deadline passes wins exclusive trophies and seasonal badges.
-- **Simulated Weekend Fixtures**: Auto-resolving match days where users set their 11-player lineup; real-world player ratings determine match outcome rewards (bonus purse money).
-- **Private Leagues**: User-hosted custom leagues with adjustable budgets, custom salary caps, and friends-only draft desks.
-
----
-
-## 4. Monetization Strategy
-
-To preserve competitive fairness while generating sustainable revenue:
-
-1. **"Director Pro" Subscription (Freemium Model)**:
-   - Advanced financial charts, historical player price graphs, and volatility indicators.
-   - Unlimited private leagues and priority push notifications for breaking Tier-1 news.
-   - **Strict Rule**: No pay-to-win purse injections; competitive integrity is strictly maintained.
-2. **Cosmetic Marketplace**:
-   - Custom club crest builders, retro kit templates, 3D stadium card designs, and animated club showcase banners.
-3. **Sponsored Private Leagues & Brand Integrations**:
-   - Partnered tournaments hosted by sports apparel, gaming, or media brands with real-world physical prizes (signed kits, match tickets).
-4. **Seasonal "Window Pass"**:
-   - Free and premium progression tracks earning aesthetic club customizations, historical player badges, and profile flairs during active transfer windows.
+> [!IMPORTANT]
+> **Sections 2–4 of this document have been superseded.**
+> The original open-market AMM trading model described here has been fully removed.
+> The current game model — **League Worlds** — uses private draft-based leagues,
+> matchday scoring, and P2P transfer windows between clubs within a league.
+>
+> Key changes:
+> - **No global AMM buy/sell**: Central automated market maker liquidity pool and 3% broker fee liquidation are removed.
+> - **No unlimited player ownership**: Player cards exist uniquely within their respective League Worlds rather than having duplicate copies owned across the entire platform.
+> - **P2P Transfers & Drafts**: Player acquisitions occur through league drafts and peer-to-peer club trades (cash adjustments, player swaps, loan deals).
+>
+> Features that carry forward:
+> - Club founding & visual identity flow
+> - Premier League player catalog (`players` table)
+> - Algorithmic valuation engine (real-world match form, transfer rumors, community consensus)
+> - Transfer Rumor Terminal & consensus voting
+> - P2P negotiation desk & anti-collusion guardrails
+> - Private leagues & membership system
+> - Club facility progression (Youth Academy, Scouting Radar, Stadium)
 
 ---
 

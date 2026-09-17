@@ -6,7 +6,7 @@ This roadmap breaks down the development of **GafferDex** into progressive, test
 
 ## 🚀 Phase 1: MVP Core Foundation (The Trading Desk)
 
-**Objective**: A fully functioning single-user experience where a user can create a club, browse Premier League players, and execute buys/sells against the central AMM with an initial £150M demo purse.
+**Objective**: A fully functioning experience where a user can create a club, browse Premier League players, and manage their squad through P2P trades within League Worlds.
 
 - [ ] **Workspace & Scaffolding**:
   - Next.js 15 (App Router) + TypeScript + Tailwind CSS + Lucide Icons.
@@ -16,10 +16,10 @@ This roadmap breaks down the development of **GafferDex** into progressive, test
 - [ ] **Club Management UI**:
   - Club founding onboarding flow (Club Name, Badge Picker, Primary/Secondary Colors).
   - Purse tracker: Real-time balance display (£150M initial), portfolio squad value, and Net Worth summary.
-- [ ] **AMM Trading Engine**:
-  - Player marketplace directory with filters (Position, Club, Price Range, Search).
-  - Player card view with valuation breakdown and quick buy/sell action.
-  - Transaction ledger: 3% broker fee deduction, squad limit guardrails ($11 \le \text{Squad} \le 25$).
+- [x] **~~AMM Trading Engine~~** *(Deprecated — replaced by P2P League Worlds model)*:
+  - ~~Player marketplace directory with filters (Position, Club, Price Range, Search).~~
+  - ~~Player card view with valuation breakdown and quick buy/sell action.~~
+  - ~~Transaction ledger: 3% broker fee deduction, squad limit guardrails.~~
 - [ ] **Portfolio View**:
   - Active roster view with purchase price vs. current market value, unrealized profit/loss (PnL) in £ and %.
 

@@ -43,10 +43,14 @@ export async function foundClub(formData: FormData) {
       },
       home_ground_name: homeGroundName,
       virtual_purse_balance: 100000000.00, // £100M starting virtual purse
+      draft_credits: 500,
+      championCoins: 0,
+      league_id: '00000000-0000-0000-0000-000000000001',
       total_squad_value: 0.00,
       academy_level: 1,
       scouting_level: 1,
       stadium_level: 1,
+      last_dividend_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
   } catch (err: any) {
     return { error: `Failed to found club: ${err.message}` };

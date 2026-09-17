@@ -1,6 +1,4 @@
 export type TransactionType =
-  | 'AMM_BUY'
-  | 'AMM_SELL'
   | 'P2P_TRADE'
   | 'ACADEMY_MINT'
   | 'DIVIDEND_PAYOUT';
@@ -11,19 +9,9 @@ export interface MarketTransaction {
   sellerClubId?: string;
   playerId: string;
   fee: number;
-  brokerFee: number;
+  brokerFee?: number;
   transactionType: TransactionType;
   createdAt: string;
-}
-
-export interface AMMQuote {
-  playerId: string;
-  spotPrice: number;
-  spreadPercent: number;
-  buyPrice: number;
-  sellPriceNet: number;
-  brokerFee: number;
-  quotaRemainingToday: number;
 }
 
 export type P2PStatus =

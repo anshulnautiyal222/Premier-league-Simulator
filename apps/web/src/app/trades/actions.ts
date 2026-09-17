@@ -7,7 +7,8 @@ import {
   getClubRoster,
   updateClubPurse,
   addPlayerToRoster,
-  removePlayerFromRoster
+  removePlayerFromRoster,
+  type RosterItem
 } from '@/lib/session';
 import { SAMPLE_PLAYERS } from '@/lib/data/players';
 import { revalidatePath } from 'next/cache';
@@ -35,7 +36,7 @@ export async function proposeTradeAction(
   const supabase = createClient();
 
   // 1. Validate recipient club exists
-  let recipientClub;
+  let recipientClub: any;
   try {
     const { data: club, error } = await supabase
       .from('clubs')
@@ -47,6 +48,11 @@ export async function proposeTradeAction(
       return { error: 'Recipient club not found.' };
     }
     recipientClub = club;
+
+    // Validate intra-league trading (SPEC v2)
+    if (proposerClub.league_id && recipientClub.league_id && proposerClub.league_id !== recipientClub.league_id) {
+      return { error: 'Cross-league trading is prohibited. Trades can only occur between clubs in the same League World.' };
+    }
   } catch {
     return { error: 'Failed to validate recipient club.' };
   }
@@ -68,7 +74,7 @@ export async function proposeTradeAction(
   }
 
   // 4. Get recipient roster to validate their constraints
-  let recipientRoster;
+  let recipientRoster: RosterItem[] = [];
   try {
     recipientRoster = await getClubRoster(recipientClubId);
   } catch {
@@ -253,7 +259,7 @@ export async function acceptTradeAction(tradeId: string) {
   }
 
   // Get proposer club for purse update
-  let proposerClub;
+  let proposerClub: any;
   try {
     const { data: pc } = await supabase
       .from('clubs')

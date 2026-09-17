@@ -5,7 +5,7 @@ credibility tier classification, and real-time rumor_multiplier recalculation.
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -18,6 +18,33 @@ router = APIRouter(prefix="/rumors", tags=["Rumor Terminal"])
 
 # Map player lookup for fast enrichment
 PLAYERS_MAP = {p["id"]: p for p in STANDALONE_PLAYERS}
+
+PUBLIC_EMBARGO_MINUTES = 15
+
+
+def scouting_early_minutes(level: int) -> int:
+    clamped = max(1, min(5, int(level or 1)))
+    return clamped * 3
+
+
+def _parse_created(created_at: str) -> datetime:
+    raw = str(created_at).replace("Z", "+00:00")
+    dt = datetime.fromisoformat(raw)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def is_rumor_visible(created_at: str, scouting_level: int, now: Optional[datetime] = None) -> bool:
+    now = now or datetime.now(timezone.utc)
+    wait = PUBLIC_EMBARGO_MINUTES - scouting_early_minutes(scouting_level)
+    return now >= _parse_created(created_at) + timedelta(minutes=wait)
+
+
+def is_rumor_early_access(created_at: str, scouting_level: int, now: Optional[datetime] = None) -> bool:
+    now = now or datetime.now(timezone.utc)
+    public_at = _parse_created(created_at) + timedelta(minutes=PUBLIC_EMBARGO_MINUTES)
+    return is_rumor_visible(created_at, scouting_level, now) and now < public_at
 
 TIER_METADATA = {
     1: {
@@ -215,6 +242,8 @@ class RumorResponse(BaseModel):
     rumor_multiplier: float
     rumor_multiplier_pct: str
     created_at: str
+    early_access: bool = False
+    public_at: Optional[str] = None
 
 
 class RumorVoteResponse(BaseModel):
@@ -230,7 +259,7 @@ class RumorVoteResponse(BaseModel):
     impact_summary: str
 
 
-def format_rumor_response(r: Dict[str, Any]) -> RumorResponse:
+def format_rumor_response(r: Dict[str, Any], scouting_level: int = 1) -> RumorResponse:
     """Enriches a raw rumor dictionary with player metadata, community sentiment, and pricing impact."""
     pid = r.get("player_id", "")
     player = PLAYERS_MAP.get(pid, {
@@ -277,6 +306,9 @@ def format_rumor_response(r: Dict[str, Any]) -> RumorResponse:
     sign = "+" if multiplier >= 0 else ""
     mult_pct = f"{sign}{multiplier * 100:.1f}%"
 
+    created_at = str(r.get("created_at", datetime.now(timezone.utc).isoformat()))
+    public_at = (_parse_created(created_at) + timedelta(minutes=PUBLIC_EMBARGO_MINUTES)).isoformat()
+
     return RumorResponse(
         id=r["id"],
         player_id=pid,
@@ -299,7 +331,9 @@ def format_rumor_response(r: Dict[str, Any]) -> RumorResponse:
         delusion_percentage=delusion_pct,
         rumor_multiplier=multiplier,
         rumor_multiplier_pct=mult_pct,
-        created_at=str(r.get("created_at", datetime.now(timezone.utc).isoformat())),
+        created_at=created_at,
+        early_access=is_rumor_early_access(created_at, scouting_level),
+        public_at=public_at,
     )
 
 
@@ -369,23 +403,40 @@ def ingest_rumor(req: RumorCreate):
 def list_rumors(
     player_id: Optional[str] = Query(None, description="Filter by player UUID"),
     tier: Optional[int] = Query(None, ge=1, le=5, description="Filter by source tier (1-5)"),
-    status: str = Query("active", description="Filter by status (active, confirmed, debunked)")
+    status: str = Query("active", description="Filter by status (active, confirmed, debunked)"),
+    scouting_level: int = Query(1, ge=1, le=5, description="Club scouting tier; gates early-access rumor_feed rows"),
 ):
     """
-    Retrieves all active transfer rumors enriched with live community consensus
-    and resulting valuation multiplier.
+    Retrieves transfer rumors visible to a club's scouting level.
+    Public embargo is 15 minutes; each scouting tier unlocks 3 extra minutes of early access.
     """
+    live_breaking = {
+        "id": "20000000-0000-0000-0000-000000000099",
+        "player_id": "10000000-0000-0000-0000-000000000016",
+        "source_name": "Fabrizio Romano",
+        "tier_rating": 1,
+        "buying_club": "Real Madrid",
+        "fee_estimate": 140000000.0,
+        "headline": "BREAKING: Real Madrid make concrete enquiry for Bukayo Saka — here we go pending",
+        "status": "active",
+        "upvotes": 12,
+        "downvotes": 3,
+        "created_at": (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat(),
+    }
+
     results = []
-    for r in RUMORS_STORE.values():
+    for r in list(RUMORS_STORE.values()) + [live_breaking]:
         if status and r.get("status") != status:
             continue
         if player_id and r.get("player_id") != player_id:
             continue
         if tier is not None and r.get("tier_rating") != tier:
             continue
-        results.append(format_rumor_response(r))
+        created_at = str(r.get("created_at", datetime.now(timezone.utc).isoformat()))
+        if not is_rumor_visible(created_at, scouting_level):
+            continue
+        results.append(format_rumor_response(r, scouting_level))
 
-    # Sort by creation / recency descending
     results.sort(key=lambda x: x.created_at, reverse=True)
     return results
 

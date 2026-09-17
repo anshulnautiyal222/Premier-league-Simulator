@@ -4,9 +4,11 @@ import { getCurrentUser, getClubForUser, getClubRoster } from '@/lib/session';
 import { SAMPLE_PLAYERS, SeedPlayer } from '@/lib/data/players';
 import { fetchPriceHistoryAction } from '../actions';
 import PlayerPriceChart from './PlayerPriceChart';
-import PlayerTradeCard from './PlayerTradeCard';
 import { 
   ArrowLeft, 
+  ArrowRight,
+  ArrowLeftRight,
+  ShieldCheck,
   Coins, 
   TrendingUp, 
   Shield, 
@@ -88,7 +90,8 @@ export default async function PlayerDetailPage({ params }: PlayerPageProps) {
   // 4. Fetch any active rumors involving this player
   let activeRumors: any[] = [];
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/rumors?player_id=${player.id}`, {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/rumors?player_id=${player.id}&scouting_level=${club.scouting_level || 1}`, {
       cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -111,11 +114,11 @@ export default async function PlayerDetailPage({ params }: PlayerPageProps) {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href="/market"
+              href="/dashboard"
               className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Transfer Market</span>
+              <span>Back to Dashboard</span>
             </Link>
           </div>
 
@@ -149,8 +152,8 @@ export default async function PlayerDetailPage({ params }: PlayerPageProps) {
       {/* Breadcrumb strip */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-          <Link href="/market" className="hover:text-slate-300">
-            Market Desk
+          <Link href="/dashboard" className="hover:text-slate-300">
+            Dashboard
           </Link>
           <ChevronRight className="w-3 h-3" />
           <span className="text-slate-400">{player.real_team}</span>
@@ -290,53 +293,41 @@ export default async function PlayerDetailPage({ params }: PlayerPageProps) {
                 </div>
               ) : (
                 <div className="text-center py-6 text-slate-400 text-xs font-mono">
-                  No active transfer rumors flagged for {player.name}. Market valuation is strictly driven by match performances and AMM demand.
+                  No active transfer rumors flagged for {player.name}. Market valuation is driven by match performances and real-world transfer news.
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right Column: Direct Trade Desk (1 Col) */}
+          {/* Right Column: P2P Transfer Desk */}
           <div className="space-y-6">
-            <PlayerTradeCard
-              player={{
-                id: player.id,
-                name: player.name,
-                current_market_value: player.current_market_value,
-                base_value: player.base_value,
-              }}
-              isOwned={isOwned}
-              purseBalance={purseBalance}
-              clubId={club.id}
-            />
-
-            {/* Valuation Mechanics Summary Card */}
-            <div className="bg-[#111827] border border-[#22304A] rounded-2xl p-5 space-y-3 text-xs shadow-xl">
-              <h4 className="font-bold text-white flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-[#00FF87]" />
-                Valuation Engine Guardrails
-              </h4>
-              <p className="text-slate-400 leading-relaxed text-[11px]">
-                Under Section 8 of the Sporting Director Economic Code, asset prices are clamped to strict bounds:
-              </p>
-              <div className="bg-[#161F30] p-3 rounded-xl border border-[#22304A] space-y-1.5 font-mono text-[10px]">
-                <div className="flex justify-between text-slate-400">
-                  <span>Guaranteed Floor (40%):</span>
-                  <strong className="text-rose-400">
-                    £{(player.base_value * 0.4).toLocaleString('en-GB')}
-                  </strong>
+            <div className="bg-[#111827] border border-[#22304A] rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between border-b border-[#22304A] pb-3">
+                <div className="flex items-center gap-2">
+                  <ArrowLeftRight className="w-5 h-5 text-[#38BDF8]" />
+                  <h3 className="text-base font-bold text-white tracking-tight">P2P Transfer Desk</h3>
                 </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Single-GW Ceiling (250%):</span>
-                  <strong className="text-[#00FF87]">
-                    £{(player.base_value * 2.5).toLocaleString('en-GB')}
-                  </strong>
-                </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>AMM Broker Sink:</span>
-                  <strong className="text-[#FFD700]">3% on Liquidation</strong>
-                </div>
+                {isOwned ? (
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-[#00FF87]/15 text-[#00FF87] border border-[#00FF87]/40 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    In Squad
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/40">
+                    League Asset
+                  </span>
+                )}
               </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Transfers occur exclusively through peer-to-peer negotiations within your League World. You can propose swaps, player-plus-cash, or cash adjustments with rival managers.
+              </p>
+              <Link
+                href="/trades"
+                className="w-full py-3 rounded-xl bg-[#00FF87] text-black font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#00e67a] active:scale-95 transition-all shadow-md shadow-[#00FF87]/10"
+              >
+                <span>Open P2P Trading Desk</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>
