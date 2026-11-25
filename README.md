@@ -153,6 +153,9 @@ npm run dev
 | `npm run redis:up`   | Launches local Redis container via `docker-compose up -d` |
 | `npm run redis:down` | Stops local Redis container |
 
+
+code - AA6WD7
+
 ---
 
 ## 📖 Architectural Documentation
